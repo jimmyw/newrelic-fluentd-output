@@ -34,6 +34,7 @@ module Fluent
 
       DEFAULT_BUFFER_TYPE = 'memory'.freeze
       MAX_PAYLOAD_SIZE = 1000000 # bytes
+      MAX_COMPRESS_ENTRIES = 100
 
       config_section :buffer do
         config_set_default :@type, DEFAULT_BUFFER_TYPE
@@ -100,6 +101,13 @@ module Fluent
           next unless record.is_a? Hash
           next if record.empty?
           logs.push(package_record(record, ts))
+          if (logs.length() >= MAX_COMPRESS_ENTRIES)
+            log.info("logs length #{logs.length()}, flushing")
+            payloads = get_compressed_payloads(logs)
+            payloads.each { |payload| send_payload(payload) }
+            logs = []
+          end
+
         end
 
 
