@@ -175,7 +175,6 @@ module Fluent
       end
 
       def compress(payload)
-        log.info("Compressin #{payload["logs"].length()} logs.")
         io = StringIO.new
         gzip = Zlib::GzipWriter.new(io)
 
