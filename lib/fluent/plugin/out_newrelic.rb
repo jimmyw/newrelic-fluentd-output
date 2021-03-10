@@ -103,6 +103,7 @@ module Fluent
         end
 
 
+        log.info("logs length #{logs.length()}, flushing")
         payloads = get_compressed_payloads(logs)
         payloads.each { |payload| send_payload(payload) }
       end
@@ -110,10 +111,13 @@ module Fluent
       def handle_response(response)
         if !(200 <= response.code.to_i && response.code.to_i < 300)
           log.error("Response was " + response.code + " " + response.body)
+        else
+          log.info("Response was " + response.code + " " + response.body)
         end
       end
 
       def send_payload(payload)
+        log.info("Sending payload size: #{payload.bytesize}")
         http = Net::HTTP.new(@end_point.host, 443)
         http.use_ssl = true
         http.verify_mode = OpenSSL::SSL::VERIFY_PEER
@@ -163,6 +167,7 @@ module Fluent
       end
 
       def compress(payload)
+        log.info("Compressin #{payload["logs"].length()} logs.")
         io = StringIO.new
         gzip = Zlib::GzipWriter.new(io)
 
